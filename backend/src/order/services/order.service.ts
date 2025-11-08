@@ -7,46 +7,32 @@ import { OrderDto } from '../dto/order.dto';
 export class OrderService {
   constructor(private readonly filmRepository: FilmRepository) {}
 
-  async createOrder(dto: CreateOrderDto): Promise<{ items: OrderDto[] }> {
-    if (!dto.tickets || dto.tickets.length === 0) {
+  async createOrder(dto: CreateOrderDto) {
+    if (!dto.tickets?.length) {
       throw new HttpException(
         'Нет билетов для бронирования',
         HttpStatus.BAD_REQUEST,
       );
     }
 
-    const results = [];
+    const results: OrderDto[] = [];
 
     for (const ticket of dto.tickets) {
       const film = await this.filmRepository.getById(ticket.film);
-      if (!film) {
-        throw new HttpException(
-          `Фильм ${ticket.film} не найден`,
-          HttpStatus.NOT_FOUND,
-        );
-      }
+      if (!film)
+        throw new HttpException(`Фильм не найден`, HttpStatus.NOT_FOUND);
 
-      const takenSeat = `${ticket.row}:${ticket.seat}`;
+      const seat = `${ticket.row}-${ticket.seat}`;
       const session = film.schedule.find((s) => s.id === ticket.session);
-
-      if (!session) {
-        throw new HttpException(
-          `Сеанс ${ticket.session} не найден`,
-          HttpStatus.NOT_FOUND,
-        );
-      }
-
-      if (session.taken.includes(takenSeat)) {
-        throw new HttpException(
-          `Место ${takenSeat} уже занято`,
-          HttpStatus.CONFLICT,
-        );
-      }
+      if (!session)
+        throw new HttpException(`Сеанс не найден`, HttpStatus.NOT_FOUND);
+      if (session.taken.includes(seat))
+        throw new HttpException(`Место уже занято`, HttpStatus.CONFLICT);
 
       await this.filmRepository.addTakenToSession(
         film.id,
         ticket.session,
-        takenSeat,
+        seat,
       );
 
       results.push({

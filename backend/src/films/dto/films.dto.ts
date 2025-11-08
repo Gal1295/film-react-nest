@@ -1,14 +1,14 @@
 import { ScheduleItem } from './schedule-item.dto';
 
 export class FilmDto {
-  readonly id: string;
-  readonly rating: number;
-  readonly director: string;
-  readonly tags: string[];
-  readonly about: string;
-  readonly image: string;
-  readonly cover: string;
-  readonly title: string;
-  readonly description?: string;
-  readonly schedule: ScheduleItem[];
+  id!: string;
+  title!: string;
+  description!: string;
+  rating!: number;
+  director!: string;
+  tags!: string[];
+  image!: string;
+  cover!: string;
+  about!: string;
+  schedule!: ScheduleItem[];
 }

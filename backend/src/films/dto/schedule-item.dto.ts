@@ -1,9 +1,9 @@
 export class ScheduleItem {
-  readonly id: string;
-  readonly daytime: string;
-  readonly hall: number;
-  readonly rows: number;
-  readonly seats: number;
-  readonly price: number;
-  readonly taken: string[];
+  id!: string;
+  daytime!: string;
+  hall!: number;
+  rows!: number;
+  seats!: number;
+  price!: number;
+  taken!: string[];
 }
