@@ -1,0 +1,66 @@
+services:
+  database:
+    image: postgres:15-alpine
+    container_name: prac_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: prac_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8080:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - database
+    networks:
+      - app-network
+
+  backend:
+    build: ./backend
+    # image: ghcr.io/gal1295/film-react-nest-backend:latest
+    container_name: prac_backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      - POSTGRES_HOST=database
+    ports:
+      - "3000:3000"
+    depends_on:
+      - database
+    networks:
+      - app-network
+
+  frontend:
+    build: ./nginx
+    # image: ghcr.io/gal1295/film-react-nest-nginx:latest
+    container_name: prac_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./public/afisha:/usr/share/nginx/html
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+  pgadmin_data:
+
+networks:
+  app-network:
+    driver: bridge
