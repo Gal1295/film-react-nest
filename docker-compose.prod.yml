@@ -1,0 +1,81 @@
+services:
+  database:
+    image: postgres:15-alpine
+    container_name: prac_postgres_prod
+    restart: unless-stopped
+    env_file:
+      - .env.prod
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    networks:
+      - app-network-prod
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: prac_pgadmin_prod
+    restart: unless-stopped
+    env_file:
+      - .env.prod
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "8080:80"
+    volumes:
+      - pgadmin_data_prod:/var/lib/pgadmin
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - app-network-prod
+
+  backend:
+    # build: ./backend
+    image: ghcr.io/gal1295/film-react-nest-backend:latest 
+    container_name: prac_backend_prod
+    restart: unless-stopped
+    env_file:
+      - .env.prod
+    environment:
+      - POSTGRES_HOST=database
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - app-network-prod
+
+  frontend:
+    # build: ./nginx
+    image: ghcr.io/gal1295/film-react-nest-nginx:latest
+    container_name: prac_nginx_prod
+    env_file:
+      - .env.prod
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - backend
+    networks:
+      - app-network-prod
+
+volumes:
+  postgres_data_prod:
+  pgadmin_data_prod:
+
+networks:
+  app-network-prod:
+    driver: bridge
