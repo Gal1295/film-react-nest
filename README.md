@@ -5,7 +5,7 @@
 # Production Application:
 https://film-nest-react.nomorepartiessbs.ru
 
-# Admin Panel (PgAdmin):
+# PgAdmin:
 http://158.160.170.16:8080
 - Email: admin@example.com  
 - Password: admin
