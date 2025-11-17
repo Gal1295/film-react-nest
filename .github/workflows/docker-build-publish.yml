@@ -1,4 +1,3 @@
-# .github/workflows/docker-build-publish.yml
 name: Build and Push Docker Images
 
 on:
@@ -63,7 +62,7 @@ jobs:
           tags: ${{ steps.meta_backend.outputs.tags }}
           labels: ${{ steps.meta_backend.outputs.labels }}
 
-      # ФРОНТЕНД (NGINX)
+      # ФРОНТЕНД
       - name: Extract Nginx Docker metadata
         id: meta_nginx
         uses: docker/metadata-action@v5
